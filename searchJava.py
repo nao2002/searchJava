@@ -1,6 +1,5 @@
 import glob
 import os
-import subprocess
 from enum import Enum
 
 class SearchJava(Enum):
@@ -39,12 +38,22 @@ def __search_main(path, priority, bit):
 
     for p in glob.glob(path, recursive=True):
         if os.path.isfile(p):
+
             reverse = "".join(reversed(p))
             target = reverse.find("\\")
             pathDir = reverse[target:]
+            pathDir2 = pathDir[1:]
+            target = pathDir2.find("\\")
+            pathDir2 = pathDir2[target:]
+            pathDir2 = "".join(reversed(pathDir2)) + "release"
             pathDir = "".join(reversed(pathDir))
 
-            new_details,ver = __check_details(pathDir)
+            if not os.path.isfile(pathDir2):
+                continue
+
+            v,b = __returnJavaVersion(pathDir2)
+
+            new_details,ver = __check_details(pathDir, v, b)
             if bit == 32 and new_details[ver]["bit"] != "32":
                 continue
             if bit == 64 and new_details[ver]["bit"] != "64":
@@ -64,40 +73,29 @@ def __search_main(path, priority, bit):
     return paths
             
 
-def __check_details(path):
+def __check_details(path,v,b):
     #詳細バージョン確認 -> return 詳細バージョン(string),メインバージョン
-    os.chdir(path)
+    javaDetail = {}
+    target = v.find('"')
+    version = v[target+1:]
+    target = version.find('"')
+    version = version[:target]
 
-    command = ['java',"-version"]
-    cmdRun = subprocess.run(command, capture_output=True)
-    if cmdRun.returncode == 0:
-        javaDetail = {}
-        output = str(cmdRun.stderr)
-        target = output.find('"')
-        version = output[target+1:]
-        target = version.find('"')
-        version = version[:target]
+    if version.startswith("1."):
+        version = version[2:]
+    target = version.find(".")
+    mainVersion = version[:target]
 
-        if version.startswith("1."):
-            version = version[2:]
-        target = version.find(".")
-        mainVersion = version[:target]
+    javaDetail[str(mainVersion)] = {}
+    javaDetail[str(mainVersion)]["path"] = path
 
-        javaDetail[str(mainVersion)] = {}
-        javaDetail[str(mainVersion)]["path"] = path
+    detailVersion = version[target+1:]
 
-        detailVersion = version[target+1:]
+    javaDetail[str(mainVersion)]["detail"] = detailVersion
 
-        javaDetail[str(mainVersion)]["detail"] = detailVersion
+    javaDetail[str(mainVersion)]["bit"] = b
 
-        if "64-Bit" in output:
-            javaDetail[str(mainVersion)]["bit"] = "64"
-        else:
-            javaDetail[str(mainVersion)]["bit"] = "32"
-
-        return javaDetail,str(mainVersion)
-    else:
-        return "error"
+    return javaDetail,str(mainVersion)
 
 
 #詳細バージョン比較でどちらを使用するかを変更 current & new を渡す(例:currentにpaths["7"]、newにjavaDetail["7"]を渡す) -> "current"と"new"のどちらかを返す
@@ -192,3 +190,24 @@ def compound_javaLists(paths1, paths2, priority=SearchJava.NEW, bit=SearchJava.A
             continue
 
     return compound_list
+
+
+#もらったパスをもとに、releaseファイルからバージョンとbitを確認 return version,bit
+def __returnJavaVersion(path):
+    txt = open(path, 'r', encoding='UTF-8')
+    data = txt.read()
+    txt.close()
+    version = data[data.find("JAVA_VERSION=")+14:]
+    version = version[:version.find("\"")]
+    bit = data[data.find("OS_ARCH=")+9:]
+    bit = bit[:bit.find("\"")]
+    if bit == "amd64" or bit == "x86_64":
+        return version,"64"
+    else:
+        return version,"32"
+            
+
+if __name__ == "__main__":
+    ret = search_path(way=SearchJava.QUICK, priority = SearchJava.NEW, bit = SearchJava.ALLBIT)
+    print(ret)
+    # __returnJavaVersion("C:/Program Files/Java/jdk-17.0.1/release")

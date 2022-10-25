@@ -210,4 +210,3 @@ def __returnJavaVersion(path):
 if __name__ == "__main__":
     ret = search_path(way=SearchJava.QUICK, priority = SearchJava.NEW, bit = SearchJava.ALLBIT)
     print(ret)
-    # __returnJavaVersion("C:/Program Files/Java/jdk-17.0.1/release")

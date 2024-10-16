@@ -1,6 +1,7 @@
 import glob
 import os
 from enum import Enum
+import re
 
 class SearchJava(Enum):
     #way
@@ -76,11 +77,8 @@ def __search_main(path, priority, bit):
 def __check_details(path,v,b):
     #詳細バージョン確認 -> return 詳細バージョン(string),メインバージョン
     javaDetail = {}
-    target = v.find('"')
-    version = v[target+1:]
-    target = version.find('"')
-    version = version[:target]
 
+    version = v
     if version.startswith("1."):
         version = version[2:]
     target = version.find(".")
@@ -141,10 +139,21 @@ def __change_by_priority(current, new, priority=SearchJava.NEW, bit=SearchJava.A
                 return falseMessage
         else:
             return falseMessage
-    elif float(newDetail) > float(currentDetail):
-        return trueMessage
     else:
-        return falseMessage
+        newDetail = re.sub(r'\D', "", newDetail)
+        currentDetail = re.sub(r'\D', "", currentDetail)
+        if len(newDetail) < len(currentDetail):
+            newDetail = newDetail + "0"*(len(currentDetail)-len(newDetail))
+        elif len(newDetail) > len(currentDetail):
+            currentDetail = currentDetail + "0"*(len(newDetail)-len(currentDetail))
+        if newDetail == "":
+            newDetail = "0"
+        if currentDetail == "":
+            currentDetail = "0"
+        if int(newDetail) > int(currentDetail):
+            return trueMessage
+        else:
+            return falseMessage
 
 #2つのjavaListを合成 -> priorityとbitの優先を処理した後の合成後Listを出力
 def compound_javaLists(paths1, paths2, priority=SearchJava.NEW, bit=SearchJava.ALLBIT):

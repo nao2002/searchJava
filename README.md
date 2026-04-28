@@ -1,8 +1,14 @@
-# searchJava
+# searchjava
 <h2>About</h2>
 PC内のjavaを検索、バージョンを取得しパスなどを返す
+<h2>Installation</h2>
+
+```
+pip install searchjava
+```
+
 <h2>Method</h2>
-<h4>・searchJava.search_path(way, priority ,bit) -> dict</h4>
+<h4>・searchjava.search_path(way, priority ,bit) -> dict</h4>
 javaを検索、結果のリストを返す　<br>
 返り値: {"ver":{"path":(path: str), "detail": (ver: str), "bit": (64 or 32: str)}}<br>
 example: {"17":{"path": "C:\Program Files\Java\jdk-17.0.1\bin\", "detail": "0.1", "bit": "64"}}<br>
@@ -24,7 +30,7 @@ SearchJava.ALL -> 32bit、64bit両方を取得し、64bit版を優先する<br>
 32 (int) -> 32bit版のみを取得する<br>
 64 (int) -> 64bit版のみを取得する<br>
 <br>
-<h4>・searchJava.compound_javaLists(paths1, paths2, priority, bit) -> dict</h4>
+<h4>・searchjava.compound_javaLists(paths1, paths2, priority, bit) -> dict</h4>
 paths1、paths2に渡された2つのリストを合成したリストを返す<br>
 priority、bitによって優先度合が変わる<br>
 <br>

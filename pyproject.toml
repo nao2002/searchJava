@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "searchjava"
+version = "1.0.0"
+requires-python = ">=3.10"
+dependencies = []
+
+[tool.setuptools]
+py-modules = ["searchjava"]
+
+[project.urls]
+Repository = "https://github.com/nao2002/searchjava"
